@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="todo.css">
+    <title>Todo list</title>
+</head>
+<body>
+    <div class="main">
+        <div class="edit-div">
+            <textarea name="" id="" cols="30" rows="2" placeholder="edit your task" aria-placeholder="edit your task"></textarea><br>
+            <button class="sub" onclick="edit_btn(this)">Edit</button>&emsp;<button onclick="this.closest('.edit-div').style.display = 'none'">Cancel</button>
+        </div>
+        <div class="list">
+            <div class="header">
+                <span>TASKS</span>
+                <br><br>
+            </div>
+            <p class="switch" onclick="hide_list(this)">
+                write task
+            </p>
+            <div class="nothing">
+                <span>No task yet</span>
+            </div>
+        </div>
+        
+        <div class="compose">
+            <div class="header">
+                <span>NEW TASK</span>
+            </div>
+            <br>
+            <div class="name-div">
+                <input type="text" name="username" id="user-name" class="field" placeholder="write your name">
+            </div>
+            <div class="task-div">
+                <textarea name="compose" id="task" class="field" placeholder="task"></textarea>
+            </div><br>
+            <div class="button-div">
+                <button onclick="add(this)" class="add">
+                    Add
+                </button>
+                <p onclick="hide_compose(this)">
+                    view task
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    function hide_list(me) {
+        document.querySelector(".list").style.display = "none"
+        document.querySelector(".compose").style.display = "block"
+    }
+    function hide_compose(me) {
+        document.querySelector(".compose").style.display = "none"
+        document.querySelector(".list").style.display = "block"
+    }
+    function del(me) {
+        var ind = me.previousElementSibling.lastElementChild.innerHTML;
+        var all_ind = document.querySelectorAll(".index")
+        for (const i in all_ind) {
+            if (all_ind.hasOwnProperty(i)) {
+                const elem = all_ind[i];
+                elem.innerHTML -= 1;
+            }
+        }
+        var list = JSON.parse(localStorage.getItem('task'))
+        list.splice(ind, 1);
+        localStorage.setItem('task', JSON.stringify(list));
+        me.closest(".whole").style.display = "none"
+    }
+    
+    function remove_data_act(all_elem) {
+        for (let i = 0; i < all_elem.length; i++) {
+            const elem = all_elem[i];
+            elem.removeAttribute('data-act')
+        }
+    }
+    
+    function edit(me) {
+        var edit_box = document.querySelector(".edit-div");
+        var all_elem = document.querySelectorAll('.whole')
+
+        remove_data_act(all_elem)
+        setTimeout(() => {
+            me.closest('.whole').setAttribute('data-act', 'edit');
+        }, 0500);
+        if(getComputedStyle(edit_box).display === "none"){
+            edit_box.style.display = "block"
+        }else{
+            edit_box.style.display = "none"
+        }
+    }
+    
+    function get_data(x) {
+        
+    }
+    function edit_btn(me) {
+        var all_elem = document.querySelectorAll('.whole')
+        for (let i = 0; i < all_elem.length; i++) {
+            const elem = all_elem[i];
+            var act = elem.getAttribute("data-act");
+            var id = elem.getAttribute("data-id");
+            switch ("edit") {
+                case act:
+                    var list = JSON.parse(localStorage.getItem('task'))
+                    list[id]['tasks'] = me.previousElementSibling.previousElementSibling.value;
+                    localStorage.setItem('task', JSON.stringify(list));
+                    elem.querySelector('.task-val').innerHTML = me.previousElementSibling.previousElementSibling.value;
+                    break;
+                
+                default:
+                    break;
+            }
+        }
+    }
+    function display_table(x, y) {
+        var box = '<div class="whole" data-id=' + y + '><div class="list-div"><div class="task"><span class="task-val">' + x + '</span><span class="index" style="display:none">' + y + '</span></div><div class="delete" onclick="del(this)"><span>Delete</span></div><div class="edit" onclick="edit(this)"><span>Edit</span></div></div><br></div>';
+        return box
+    }
+    if(typeof(Storage) !== "undefined"){
+        function add(me) {
+            var body = document.querySelector(".header")
+            var name = document.getElementById("user-name").value
+            var user_task = document.getElementById("task").value
+            var person = {
+                name: name,
+                tasks: user_task
+            }
+
+            if(localStorage.getItem('task') == null){
+                var persons = []
+                persons.push(person)
+                localStorage.setItem('task', JSON.stringify(persons))
+                var item = JSON.parse(localStorage.getItem('task'))
+                body.insertAdjacentHTML('afterend', display_table(item[item.length - 1]['tasks'], item.length - 1))
+            }else{
+                var user = JSON.parse(localStorage.getItem('task'));
+                user.push(person);
+                localStorage.setItem('task', JSON.stringify(user));
+                var item = JSON.parse(localStorage.getItem('task'))
+                body.insertAdjacentHTML('afterend', display_table(item[item.length - 1]['tasks'], item.length - 1))
+            }
+            if(localStorage.getItem('task') != null){
+                document.querySelector(".nothing").style.display = "none"
+            }else{
+                document.querySelector(".nothing").style.display = "block" 
+            }   
+        }
+        var all_task = JSON.parse(localStorage.getItem('task'))
+        if(localStorage.getItem('task') != null){
+            all_task.findIndex(function (x, e) {
+                var body = document.querySelector(".header")
+                body.insertAdjacentHTML('afterend', display_table(all_task[e]['tasks'], e));
+            })
+        }else{
+            document.querySelector(".nothing").style.display = "block" 
+        }
+    }
+
+</script>
+</html>
